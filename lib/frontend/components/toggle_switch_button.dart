@@ -3,7 +3,9 @@
 import 'package:flutter/material.dart';
 
 import 'package:font_awesome_flutter/font_awesome_flutter.dart';
+import 'package:get/get.dart';
 import 'package:provider/provider.dart';
+import 'package:tehran/frontend/pages/exchange/controllers/exchange_page_controller.dart';
 
 import '../theme/theme_provider.dart';
 import 'toggle_switch/widgets/animated_toggle_switch.dart';
@@ -18,6 +20,7 @@ class ToggleSwitchButton extends StatefulWidget {
 class _ToggleSwitchButtonState extends State<ToggleSwitchButton> {
   int value = 0;
   bool positive = false;
+  final exchangeController = Get.put(ExchangePageController());
 
   @override
   Widget build(BuildContext context) {
@@ -44,11 +47,19 @@ class _ToggleSwitchButtonState extends State<ToggleSwitchButton> {
             offset: Offset(0, 2.5),
           ),
         ],
-        onChanged: (b) => setState(() {
-          positive = b;
-          final provider = Provider.of<ThemeProvider>(context, listen: false);
-          provider.toggleTheme();
-        }),
+        onChanged: (b) {
+          if (exchangeController.isIconChange.value) {
+            Get.snackbar(
+                'توجه!', "تا زمان اتمام تایمر امکان تغییر تم وجود ندارد");
+          } else {
+            setState(() {
+              positive = b;
+              final provider =
+                  Provider.of<ThemeProvider>(context, listen: false);
+              provider.toggleTheme();
+            });
+          }
+        },
         colorBuilder: (b) => b ? Colors.black : Colors.white,
         iconBuilder: (value) => value
             ? const Icon(

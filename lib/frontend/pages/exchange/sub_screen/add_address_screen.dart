@@ -23,8 +23,8 @@ class AddAddressScreen extends StatefulWidget {
 
 class _AddAddressScreenState extends State<AddAddressScreen> {
   final exchangeController = Get.find<ExchangePageController>();
+  Button currenButton = Button.first;
   bool isPressed = false;
-  bool isNextPressd = false;
   @override
   Widget build(BuildContext context) {
     return Obx(() {
@@ -69,186 +69,232 @@ class _AddAddressScreenState extends State<AddAddressScreen> {
           ),
           Padding(
             padding: const EdgeInsets.all(15.0),
-            child: isPressed
-                ? CustomBigButton(
-                    label: 'شروع تبادل',
-                    onPressed: () async {
-                      if (exchangeController
-                              .textSupportAddressController.text.isEmpty &&
-                          exchangeController.whichButton.value != Button.last &&
-                          isNextPressd) {
-                        Get.defaultDialog(
-                          backgroundColor:
-                              Theme.of(context).scaffoldBackgroundColor,
-                          title: "توجه!",
-                          titleStyle: Theme.of(context).textTheme.headline4,
-                          content: Text(
-                            "آیا از خالی گذاشتن آدرس بازپرداخت مطمئن هستید؟ ",
-                            style: Theme.of(context).textTheme.headline4,
-                          ),
-                          actions: <Widget>[
-                            Row(
-                              mainAxisAlignment: MainAxisAlignment.end,
-                              children: [
-                                TextButton(
-                                  child: const Text(
-                                    'بله',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontFamily: "Yekanbakh",
-                                        color: Colors.green),
-                                  ),
-                                  onPressed: () {
-                                    exchangeController.goToNext(Button.last);
-                                    setState(() {
-                                      isPressed = false;
-                                    });
-                                    Get.back();
-                                  },
-                                ),
-                                const SizedBox(
-                                  width: 20,
-                                ),
-                                TextButton(
-                                  child: const Text(
-                                    'خیر',
-                                    style: TextStyle(
-                                        fontSize: 20,
-                                        fontFamily: "Yekanbakh",
-                                        color: Colors.red),
-                                  ),
-                                  onPressed: () {
-                                    setState(() {
-                                      isPressed = false;
-                                    });
-                                    Get.back();
-                                  },
-                                ),
-                              ],
+            child: CustomBigButton(
+              isPressed: isPressed,
+              label:
+                  currenButton == Button.first || currenButton == Button.second
+                      ? 'بعدی'
+                      : 'شروع تبادل',
+              onPressed: () async {
+                setState(() {
+                  isPressed = true;
+                });
+                if (currenButton == Button.first) {
+                  if (exchangeController.textAddressController.text.isEmpty) {
+                    setState(() {
+                      isPressed = false;
+                    });
+                    Get.snackbar('توجه!',
+                        "برای شروع تبادل باید آدرس کیف پول خود را وارد کنید.");
+                  } else {
+                    ValidationAddressModel? validAddress =
+                        await ValidationAddressApi().getValidation(
+                            address:
+                                exchangeController.textAddressController.text,
+                            currencyNetwork:
+                                exchangeController.forSellChoice!.inNetwork!);
+                    if (validAddress!.isValid == 'true') {
+                      setState(() {
+                        exchangeController.showSecondBox();
+                        currenButton = Button.second;
+                        isPressed = false;
+                      });
+                    } else {
+                      setState(() {
+                        isPressed = false;
+                      });
+                      Get.snackbar('توجه!', "آدرس وارد شده معتبر نیست");
+                    }
+                  }
+                } else if (currenButton == Button.second) {
+                  if (exchangeController
+                          .textSupportAddressController.text.isEmpty &&
+                      exchangeController.whichButton.value != Button.last &&
+                      currenButton == Button.second) {
+                    Get.defaultDialog(
+                      backgroundColor:
+                          Theme.of(context).scaffoldBackgroundColor,
+                      title: "توجه!",
+                      titleStyle: Theme.of(context).textTheme.headline4,
+                      content: Text(
+                        "آیا از خالی گذاشتن آدرس بازپرداخت مطمئن هستید؟ ",
+                        style: Theme.of(context).textTheme.headline4,
+                      ),
+                      actions: <Widget>[
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.end,
+                          children: [
+                            TextButton(
+                              child: const Text(
+                                'بله',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: "Yekanbakh",
+                                    color: Colors.green),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  currenButton = Button.last;
+                                  isPressed = false;
+                                });
+                                Get.back();
+                              },
+                            ),
+                            const SizedBox(
+                              width: 20,
+                            ),
+                            TextButton(
+                              child: const Text(
+                                'خیر',
+                                style: TextStyle(
+                                    fontSize: 20,
+                                    fontFamily: "Yekanbakh",
+                                    color: Colors.red),
+                              ),
+                              onPressed: () {
+                                setState(() {
+                                  isPressed = false;
+                                });
+                                Get.back();
+                              },
                             ),
                           ],
-                        );
-                      } else {
-                        setState(() {
-                          isPressed = false;
-                        });
-                        var create = await CreateTransactionApi().create();
-                        final finalController = Get.put(FinalStepsController());
-                        finalController.setTransactioin(create!);
-
-                        log('here:${create.payinAddress}');
-                        Get.to(() => const FinalStepsPage());
-                      }
-                    },
-                  )
-                : CustomBigButton(
-                    isPressed: isPressed,
-                    label: 'بعدی',
-                    onPressed: () async {
+                        ),
+                      ],
+                    );
+                  } else {
+                    ValidationAddressModel? validAddress =
+                        await ValidationAddressApi().getValidation(
+                            address: exchangeController
+                                .textSupportAddressController.text,
+                            currencyNetwork:
+                                exchangeController.forSellChoice!.inNetwork!);
+                    if (validAddress!.isValid == 'true') {
                       setState(() {
-                        isPressed = true;
+                        currenButton = Button.last;
+                        isPressed = false;
                       });
-                      // kmessage;
-                      // controller.changeScreen();
-                      if (exchangeController
-                          .textAddressController.text.isEmpty) {
-                        setState(() {
-                          isPressed = false;
-                        });
-                        Get.snackbar('توجه!',
-                            "برای شروع تبادل باید آدرس کیف پول خود را وارد کنید.");
-                      } else {
-                        ValidationAddressModel? validAddress =
-                            await ValidationAddressApi().getValidation(
-                                address: exchangeController
-                                    .textAddressController.text,
-                                currencyNetwork: exchangeController
-                                    .forSellChoice!.inNetwork!);
-                        if (validAddress!.isValid == 'true') {
-                          exchangeController.showSecondBox();
-                          setState(() {});
+                    } else {
+                      setState(() {
+                        isPressed = false;
+                      });
+                      Get.snackbar('توجه!', "آدرس وارد شده معتبر نیست");
+                    }
+                    setState(() {
+                      isPressed = false;
+                    });
+                  }
+                } else {
+                  var create = await CreateTransactionApi().create();
+                  final finalController = Get.put(FinalStepsController());
+                  finalController.setTransactioin(create!);
 
-                          if (exchangeController
-                                  .textSupportAddressController.text.isEmpty &&
-                              exchangeController.whichButton.value !=
-                                  Button.last &&
-                              isNextPressd) {
-                            Get.defaultDialog(
-                              backgroundColor:
-                                  Theme.of(context).scaffoldBackgroundColor,
-                              title: "توجه!",
-                              titleStyle: Theme.of(context).textTheme.headline4,
-                              content: Text(
-                                "آیا از خالی گذاشتن آدرس بازپرداخت مطمئن هستید؟ ",
-                                style: Theme.of(context).textTheme.headline4,
-                              ),
-                              actions: <Widget>[
-                                Row(
-                                  mainAxisAlignment: MainAxisAlignment.end,
-                                  children: [
-                                    TextButton(
-                                      child: const Text(
-                                        'بله',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontFamily: "Yekanbakh",
-                                            color: Colors.green),
-                                      ),
-                                      onPressed: () {
-                                        exchangeController
-                                            .goToNext(Button.last);
-                                        setState(() {
-                                          isPressed = false;
-                                        });
-                                        Get.back();
-                                      },
-                                    ),
-                                    const SizedBox(
-                                      width: 20,
-                                    ),
-                                    TextButton(
-                                      child: const Text(
-                                        'خیر',
-                                        style: TextStyle(
-                                            fontSize: 20,
-                                            fontFamily: "Yekanbakh",
-                                            color: Colors.red),
-                                      ),
-                                      onPressed: () {
-                                        setState(() {
-                                          isPressed = false;
-                                        });
-                                        Get.back();
-                                      },
-                                    ),
-                                  ],
-                                ),
-                              ],
-                            );
-                          } else {
-                            setState(() {
-                              isPressed = false;
-                            });
-                            var create = await CreateTransactionApi().create();
-                            final finalController =
-                                Get.put(FinalStepsController());
-                            finalController.setTransactioin(create!);
-
-                            log('here:${create.payinAddress}');
-                            Get.to(() => const FinalStepsPage());
-                          }
-                        } else {
-                          setState(() {
-                            isPressed = false;
-                          });
-                          Get.snackbar('توجه!', "آدرس وارد شده معتبر نیست");
-                        }
-                      }
-                    },
-                  ),
+                  log('here:${create.payinAddress}');
+                  Get.to(() => const FinalStepsPage());
+                  setState(() {
+                    isPressed = false;
+                  });
+                }
+              },
+            ),
           ),
         ],
       );
     });
   }
 }
+
+
+// if (exchangeController.textAddressController.text.isEmpty) {
+//                   setState(() {
+//                     isPressed = false;
+//                   });
+//                   Get.snackbar('توجه!',
+//                       "برای شروع تبادل باید آدرس کیف پول خود را وارد کنید.");
+//                 } else {
+//                   ValidationAddressModel? validAddress =
+//                       await ValidationAddressApi().getValidation(
+//                           address:
+//                               exchangeController.textAddressController.text,
+//                           currencyNetwork:
+//                               exchangeController.forSellChoice!.inNetwork!);
+//                   if (validAddress!.isValid == 'true') {
+//                     setState(() {
+//                       exchangeController.showSecondBox();
+//                       currenButton = Button.second;
+//                     });
+
+//                     if (exchangeController
+//                             .textSupportAddressController.text.isEmpty &&
+//                         exchangeController.whichButton.value != Button.last &&
+//                         currenButton == Button.second) {
+//                       Get.defaultDialog(
+//                         backgroundColor:
+//                             Theme.of(context).scaffoldBackgroundColor,
+//                         title: "توجه!",
+//                         titleStyle: Theme.of(context).textTheme.headline4,
+//                         content: Text(
+//                           "آیا از خالی گذاشتن آدرس بازپرداخت مطمئن هستید؟ ",
+//                           style: Theme.of(context).textTheme.headline4,
+//                         ),
+//                         actions: <Widget>[
+//                           Row(
+//                             mainAxisAlignment: MainAxisAlignment.end,
+//                             children: [
+//                               TextButton(
+//                                 child: const Text(
+//                                   'بله',
+//                                   style: TextStyle(
+//                                       fontSize: 20,
+//                                       fontFamily: "Yekanbakh",
+//                                       color: Colors.green),
+//                                 ),
+//                                 onPressed: () {
+//                                   exchangeController.goToNext(Button.last);
+//                                   setState(() {
+//                                     isPressed = false;
+//                                   });
+//                                   Get.back();
+//                                 },
+//                               ),
+//                               const SizedBox(
+//                                 width: 20,
+//                               ),
+//                               TextButton(
+//                                 child: const Text(
+//                                   'خیر',
+//                                   style: TextStyle(
+//                                       fontSize: 20,
+//                                       fontFamily: "Yekanbakh",
+//                                       color: Colors.red),
+//                                 ),
+//                                 onPressed: () {
+//                                   setState(() {
+//                                     isPressed = false;
+//                                   });
+//                                   Get.back();
+//                                 },
+//                               ),
+//                             ],
+//                           ),
+//                         ],
+//                       );
+//                     } else {
+//                       setState(() {
+//                         isPressed = false;
+//                       });
+
+//                       var create = await CreateTransactionApi().create();
+//                       final finalController = Get.put(FinalStepsController());
+//                       finalController.setTransactioin(create!);
+
+//                       log('here:${create.payinAddress}');
+//                       Get.to(() => const FinalStepsPage());
+//                     }
+//                   } else {
+//                     setState(() {
+//                       isPressed = false;
+//                     });
+//                     Get.snackbar('توجه!', "آدرس وارد شده معتبر نیست");
+//                   }
+//                 }

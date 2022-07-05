@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 
 import 'frontend/components/toggle_switch_button.dart';
 
+// bc1qxy2kgdygjrsqtzq2n0yrf2493p83kkfjhx0wlh
 const Color kLightBackgroundColor = Color(0xFFE5E5E5);
 const Color kLightAppBarColor = Color(0xFFEFF4FF);
 const Color kLightNavBarColor = Color(0xFFEFF4FF);

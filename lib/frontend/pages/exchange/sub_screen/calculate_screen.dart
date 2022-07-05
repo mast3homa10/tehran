@@ -214,20 +214,6 @@ class CalculatePage extends StatelessWidget {
           ),
         ],
       ),
-      if (controller.isIconChange.value)
-        Container(
-            margin: const EdgeInsets.all(3.0),
-            padding: const EdgeInsets.all(4.0),
-            decoration: BoxDecoration(
-                color: kLightButtonColor,
-                borderRadius: BorderRadius.circular(20)),
-            child: Row(children: [
-              const Icon(FontAwesomeIcons.clock),
-              CustomTimer(
-                maxSecond: 120,
-                controller: timerController,
-              ),
-            ])),
     ]);
   }
 }

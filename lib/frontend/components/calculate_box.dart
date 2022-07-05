@@ -11,10 +11,12 @@ import '../../frontend/pages/exchange/controllers/timer_controller.dart';
 import '../../backend/models/currency_model.dart';
 import '../../backend/network_constants.dart';
 import '../../constants.dart';
+import 'custom_timer.dart';
 
 class CalculateBox extends StatelessWidget {
   CalculateBox({
     Key? key,
+    this.boxId = 0,
     this.initialValue,
     this.currency,
     this.isHaveIcon = false,
@@ -23,6 +25,7 @@ class CalculateBox extends StatelessWidget {
     this.openIconPressed,
     this.closeIconPressed,
   }) : super(key: key);
+  final int boxId;
   final CurrencyModel? currency;
   final String? initialValue;
   final bool isHaveIcon;
@@ -33,6 +36,7 @@ class CalculateBox extends StatelessWidget {
 
   CalculateBox.second({
     Key? key,
+    this.boxId = 1,
     this.initialValue,
     this.currency,
     this.isHaveIcon = true,
@@ -228,21 +232,38 @@ class CalculateBox extends StatelessWidget {
 
   Widget buildFixIcon(BuildContext context) {
     if (isHaveIcon) {
-      return isIconChange
-          ? IconButton(
-              onPressed: closeIconPressed,
-              icon: Icon(
-                CupertinoIcons.lock,
-                color: Theme.of(context).backgroundColor,
-              ),
-            )
-          : IconButton(
-              onPressed: openIconPressed,
-              icon: Icon(
-                CupertinoIcons.lock_open,
-                color: Theme.of(context).dividerTheme.color,
-              ),
-            );
+      return GetBuilder<ExchangePageController>(
+        builder: (controller) {
+          return isIconChange
+              ? Column(
+                  children: [
+                    if (controller.isIconChange.value && boxId == 1)
+                      CustomTimer(
+                        maxSecond: 120,
+                        controller: timerController,
+                      ),
+                    const Icon(
+                      FontAwesomeIcons.clock,
+                      size: 10,
+                    ),
+                    IconButton(
+                      onPressed: closeIconPressed,
+                      icon: Icon(
+                        CupertinoIcons.lock,
+                        color: Theme.of(context).backgroundColor,
+                      ),
+                    ),
+                  ],
+                )
+              : IconButton(
+                  onPressed: openIconPressed,
+                  icon: Icon(
+                    CupertinoIcons.lock_open,
+                    color: Theme.of(context).dividerTheme.color,
+                  ),
+                );
+        },
+      );
     } else {
       return Container();
     }

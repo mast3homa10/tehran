@@ -13,7 +13,7 @@ class InitTableApi {
 
     if (response.statusCode == 200) {
       Map<String, dynamic> estimateData =
-          json.decode(response.body)['data']['estimateBTCETH'];
+          json.decode(response.body)['data']['estimate'];
       InitTabelModel decodedestimateData =
           InitTabelModel.fromJson(estimateData);
       log('$decodedestimateData');
